@@ -1,0 +1,130 @@
+{{ define "component_edit_webhook" }}
+    <div class="row">
+        <!-- Right -->
+        <div class="col-md-4 order-md-2 mb-4">
+            <h4 class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">Found Placeholders</span>
+                <span class="badge badge-secondary badge-pill" id="inoph">0</span>
+            </h4>
+
+            <ul class="list-group mb-3 bg-dark" id="iulph">
+                <!-- Add me here -->
+            </ul>
+
+            <form class="card p-2 bg-dark" id="webhookForm">
+                <button type="submit" class="btn btn-blurple">
+                    Test & Save Webhook
+                </button>
+            </form>
+        </div>
+
+        <!-- Left -->
+        <div class="col-md-8 order-md-1">
+            <h4 class="d-flex justify-content-between align-items-center mb-3">
+                {{ if .UID }}
+                    <span class="text-muted">✍️ {{ .UID }}</span>
+                {{ else }}
+                    <span class="text-muted">👷 Create</span>
+                {{ end }}
+            </h4>
+
+            <form id="webhookDataForm">
+                <!-- edit mode?! -->
+                {{ if .UID }}
+                    <input type="hidden" name="EditMode" value="">
+                {{ end }}
+
+                <div class="col-md-12 md-3">
+                    <label for="webhook_url" class="text-muted">Webhook-URL</label>
+                    <!-- webhook_url -->
+                    <input
+                            type="text"
+                            id="webhook_url"
+                            name="webhook_url"
+                            class="form-control bg-dark text-light blurple-border"
+                            placeholder="https://discord.com/api/webhooks/..."
+                            {{ if .WebhookURL }}
+                                value="{{ .WebhookURL }}"
+                            {{ end }}
+                            required
+                    />
+                </div>
+
+                <br>
+
+                <div class="col-md-12 mb-3">
+                    <!-- payload -->
+                    <label for="payload" class="text-muted">Payload</label>
+                    <textarea
+                            class="form-control bg-dark text-light blurple-border"
+                            id="payload"
+                            name="payload"
+                            placeholder=""
+                            rows="20"
+                            required
+                    >{{ if .Data }}{{ .Data }}{{ else }}{{ template "component_example_template" }}{{ end }}</textarea>
+
+                    <small class="text-danger" style="display: none" id="ise">Syntax error.</small>
+                </div>
+
+                <!-- UID -->
+                <div class="md-3">
+                    <label for="uid" class="text-muted">UID: must be unique</label>
+                    <!-- uid -->
+                    <input
+                            type="text"
+                            id="uid"
+                            name="uid"
+                            class="form-control bg-dark text-light blurple-border"
+                            placeholder="(( Generate ))"
+                            {{ if .UID }}
+                                value="{{ .UID }}"
+                                readonly
+                            {{ end }}
+                            required
+                    />
+                </div>
+
+                <br>
+
+                <!-- Secret -->
+                <div class="md-3">
+                    <label for="secret" class="text-muted">Secret: 6 - 64 chars [^[A-Za-z0-9-_.]{6,64}$]</label>
+
+                    <input
+                            type="text"
+                            id="secret"
+                            name="secret"
+                            class="form-control bg-dark text-light blurple-border"
+                            placeholder="(( Generate ))"
+                            {{ if .Secret }}
+                                value="{{ .Secret }}"
+                            {{ end }}
+                            required
+                    />
+                </div>
+            </form>
+        </div>
+    </div>
+{{ end }}
+
+{{ define "component_example_template" }}{{`{
+    "content": "[ @everyone ]",
+    "username": "Notify for {{ .Camera.Name }}",
+    "avatar_url": "{{ .Camera.Avatar }}",
+    "embeds": [
+        {
+            "title": "👉 Live stream",
+            "description": "Detected motion on camera {{ .Camera.Name }}",
+            "color": 16725044,
+            "fields": [
+                {"name": "📸", "value": "{{ .Camera.Name }}", "inline": true},
+                {"name": "📸", "value": "{{ .Camera.ID }}", "inline": true}
+            ],
+            "author": {
+                "name": "{{ .Camera.Name}}} / {{ .Camera.ID }}",
+                "icon_url": "{{ .Camera.Avatar }}"
+            }
+        }
+    ]
+}`}}{{ end }}

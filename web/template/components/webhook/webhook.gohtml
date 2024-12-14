@@ -1,0 +1,97 @@
+{{ define "webhook_elem" }}
+
+    {{ $stats := . | GetStats }}
+
+    <!-- Get Status Color -->
+    {{ $status_color := "" }}
+    {{ if eq $stats.LastSuccessfulCall $stats.LastUnsuccessfulCall }}
+        {{ $status_color = "" }}
+    {{ else }}
+        {{ if ge $stats.LastSuccessfulCall $stats.LastUnsuccessfulCall }}
+            {{ $status_color = "status-green" }}
+        {{ else }}
+            {{ $status_color = "status-red" }}
+        {{ end }}
+    {{ end }}
+
+    <div class="webhook">
+        <div class="container p-3">
+            <!-- Row 1 -->
+            <div class="row">
+                <div class="col-md-10">
+                    <h3 class="headerId">{{ .UID }}</h3>
+                </div>
+                <div class="col-md-2">
+                    <button class="whbtn editbtn" onclick="location.href='/dashboard/edit/{{ .UID }}'">Edit</button>
+                </div>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="row">
+
+                <div class="col-md-10">
+                    <label for="secrettxt" class="text-light">Secret:</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span
+                                    class="input-group-text"
+                                    onclick="toggleSecretVisibility(this);">
+                                <a href="#" class="pw-visibility">👀</a>
+                            </span>
+                        </div>
+                        <input
+                                id="secrettxt"
+                                type="password"
+                                class="secret"
+                                value="{{ .Secret }}"
+                        />
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <a href="#" class="text-center deletebtn" onclick="deleteWebhook('{{ .UID }}');">Delete</a>
+                    <button
+                            class="whbtn copybtn {{ $status_color }}"
+                            data-webhook-uid="{{ .UID }}"
+                            data-webhook-secret="{{ .Secret }}"
+                            onclick="copyURL(this);">Show URL
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {{ if $stats }}
+            <div class="container">
+                <div class="row statusindicator {{ $status_color }} mt-1">
+                    <div class="col-md-12 pt-2">
+                        {{ if eq $status_color "" }}
+                            <span class="text-light"><i>No calls recorded (yet).</i></span>
+                        {{ else }}
+                            <span>Calls: {{ $stats.CallsGlobal }} (global)</span>,
+                            <span>{{ $stats.Calls60 }} (60s)</span> |
+                            <span>Successful: {{ $stats.SuccessfulCalls }}
+                            <strong>
+                                ({{ $stats.LastSuccessfulCall | StrAgo }} ago)
+                            </strong>
+                        </span>,
+                            <a
+                                    class="noa"
+                                    style="text-decoration: none"
+                                    href="#"
+                                    onclick="showLastErrorInfo('{{ $stats.LastErrorMessage | Escape}}', '{{ $stats.LastErrorSentJson | Escape }}')"
+                            >
+                                <span>Unsuccessful: {{ $stats.UnsuccessfulCalls }}</span>
+                                <strong>
+                                    ({{ $stats.LastUnsuccessfulCall | StrAgo }} ago)
+                                </strong>
+
+                                {{ if $stats.LastErrorMessage }}
+                                    (<code>{{ $stats.LastErrorMessage | Escape }}</code>)
+                                {{ end }}
+                            </a>
+                        {{ end }}
+                    </div>
+                </div>
+            </div>
+        {{ end }}
+    </div>
+{{ end }}

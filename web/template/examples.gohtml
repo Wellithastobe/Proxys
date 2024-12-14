@@ -1,0 +1,210 @@
+{{ define "customCSS" }}{{ end }}
+
+{{ define "title" }}whgoxy - Examples{{ end }}
+
+
+{{ define "content" }}
+    <style>
+        .ex {
+            padding: 10px;
+        }
+
+        .ex-1 {
+            background: #2C2F33;
+            border: 1px solid #99AAB5;
+            border-radius: 10px;
+        }
+
+        .toc {
+            text-decoration: none;
+            color: #99AAB5;
+        }
+
+        .ex-img {
+            max-width: 600px;
+        }
+    </style>
+
+    <section id="welcome">
+        <div class="container-lg py-5">
+            <div class="row">
+                <div class="col-md-6" id="sectionLeft">
+                    <h1 class="text-light text-right">Examples</h1>
+                    <h2 class="text-light my-5">
+                        Here are a few examples to show what <strong>whgoxy</strong> can do:
+                    </h2>
+                    <ul class="toc">
+                        <li><a class="toc" href="#placeholders">Placeholders</a></li>
+                        <li><a class="toc" href="#list">List</a></li>
+                        <li><a class="toc" href="#dynamic-fields">Dynamic Fields</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-6 py-5">
+                    <img
+                            src="https://discord.com/assets/d0d4785a2a708e2e6aae274cbe13cb6c.svg"
+                            alt=""
+                            srcset=""
+                    />
+                </div>
+            </div>
+        </div>
+    </section>
+    <section>
+        <div class="container-md py-5">
+            <!-- Example 1 -->
+            <div class="row ex ex-1">
+                <div class="col-md-6" id="placeholders">
+                    <h3 class="text-light text-right">Placeholders</h3>
+                </div>
+
+                {{ template "example-1" }}
+            </div>
+
+            <hr>
+
+            <!-- Example 2 -->
+            <div class="row ex ex-1">
+                <div class="col-md-6" id="list">
+                    <h3 class="text-light text-right">List</h3>
+                </div>
+
+                {{ template "example-2" }}
+            </div>
+
+            <hr>
+
+            <!-- Example 3 -->
+            <div class="row ex ex-1">
+                <div class="col-md-6" id="dynamic-fields">
+                    <h3 class="text-light text-right">Dynamic Fields</h3>
+                </div>
+
+                {{ template "example-3" }}
+            </div>
+        </div>
+    </section>
+{{ end }}
+
+{{ define "example-1" }}
+    <div class="text-light text-right"><h5>Webhook</h5></div>
+    <pre><code class="language-json">{
+  "content": "[ @everyone ]",
+  "username": "Notify for {{ "{{ .Camera.Name }}" }}",
+  "avatar_url": "{{ "{{ .Camera.Avatar }}" }}",
+  "embeds": [
+    {
+      "title": "👉 Live stream",
+      "description": "Detected motion on camera {{ "{{ .Camera.Name }}" }}",
+      "color": 16725044,
+      "url": "{{ "{{ .Camera.Stream }}" }}",
+      "fields": [
+        {"name": "📸", "value": "{{ "{{ .Camera.Name }}" }}", "inline": true},
+        {"name": "📸", "value": "{{ "{{ .Camera.ID }}" }}", "inline": true}
+      ],
+      "author": {
+        "name": "{{ "{{ .Camera.Name }}" }} / {{ "{{ .Camera.ID }}" }}",
+        "icon_url": "{{ "{{ .Camera.Avatar }}" }}"
+      }
+    }
+  ]
+}</code></pre>
+
+    <div class="text-light text-right"><h5>POST /call</h5></div>
+    <pre><code class="language-json">{
+    "Camera": {
+        "ID": 1,
+        "Name": "Attic Camera",
+        "Avatar": "https://image.com/camera.png",
+        "Stream": "http://192.168.0.5:80"
+    }
+}</code></pre>
+    <div class="text-light text-right"><h5>Output</h5></div>
+    <img class="ex-img" src="/static/img/exo2.png" alt="example1">
+{{ end }}
+
+{{ define "example-2" }}
+    <div class="text-light text-right"><h5>Webhook</h5></div>
+    <pre><code class="language-json">{
+      "content": "[ @everyone ]\n\n
+    **My favorite musicians:**\n
+    {{ "{{ if .Musicians }}" }}
+      ```markdown\n
+      {{ "{{ range .Musicians }}" }}
+        * {{ "{{ . }}" }}\n
+      {{ "{{ end }}" }}
+      ```\n
+    {{ "{{ else }}" }}
+      I don't have any favorite musicians 🙃
+    {{ "{{ end }}" }}"
+}</code></pre>
+
+    <div class="text-light text-right"><h5>POST /call</h5></div>
+    <pre><code class="language-json">{
+    "Musicians": [
+        "Lil Dicky",
+        "Fanta Vier",
+        "Audio88",
+        "Gorillaz",
+        "grandson"
+    ]
+}</code></pre>
+
+    <div class="text-light text-right"><h5>Output</h5></div>
+    <img class="ex-img" src="/static/img/exo1.png" alt="example2">
+{{ end }}
+
+{{ define "example-3" }}
+    <div class="text-light text-right"><h5>Webhook</h5></div>
+    <pre><code class="language-json">{{ "{{ define \"fields\" }}" }}
+            {{ "{{ range $k, $v := . }}" }}
+            {{ "{{- if $k }}" }}
+            {{ "{{- \",\" -}}" }}
+            {{ "{{ end }}" }}
+        {
+            "name": "{{ "{{ $v.Name }}" }}",
+            "value": "{{ "{{ $v.Value }}" }}",
+            "inline": true
+        }
+    {{ "{{ end }}" }}
+            {{ "{{ end }}" }}
+
+{
+    "content": "Hello, {{ "{{ .User }}" }}!",
+    "embeds": [
+        {
+            "title": "Embed Title",
+            "color": 16725044,
+            "fields": [
+                {{ "{{ template \"fields\" .F }}" }}
+            ]
+        }
+    ]
+}</code></pre>
+
+    <div class="text-light text-right"><h5>POST /call</h5></div>
+    <pre><code class="language-json">{
+  "User": "Me",
+  "M": [
+    {
+      "Name": "Name 1",
+      "Value": "Value 1"
+    },
+    {
+      "Name": "Name 2",
+      "Value": "Value 2"
+    },
+    {
+      "Name": "Name 3",
+      "Value": "Value 3"
+    },
+    {
+      "Name": "Name 4",
+      "Value": "Value 4"
+    }
+  ]
+}</code></pre>
+
+    <div class="text-light text-right"><h5>Output</h5></div>
+    <img  class="ex-img" src="/static/img/exo3.png" alt="example3">
+{{ end }}
